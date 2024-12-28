@@ -153,7 +153,7 @@ def update():
     if game_state == 'gameplay':
 
         if len(enemies) == 0 and score_manager.level < 5:
-            enemies = [Enemy(speed=  10, score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
+            enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
                             shootables_parent=shootables_parent, lst_enemies=enemies, x=random.uniform(10, 100),
                             z=random.uniform(10, 100)) for _ in range(4)] # просто создаем 4 врагов пока уровень не будет 5
         elif score_manager.level == 5:
