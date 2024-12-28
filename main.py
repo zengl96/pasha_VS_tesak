@@ -108,8 +108,6 @@ def pause_input(key):
 
 # pause_handler = Entity(ignore_paused=True, input=pause_input)
 pause_handler = Entity(ignore_paused=True, input=pause_input)
-print('424242')
-print('fdsfsdds1')
 count = 0
 
 def update():
