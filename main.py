@@ -124,7 +124,7 @@ def update():
 
     
     if game_state == 'dialog':
-
+        
         if score_manager.score == 0:
             # Проверку выше надо будет поменять
             gun.disable() # Скрываем оружие
@@ -132,9 +132,11 @@ def update():
                 # Если на карте нету никого создаем врага
                 camera.enabled = False
                 gun.disable()
-                enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
-                                shootables_parent=shootables_parent, lst_enemies=enemies,x=60,z=60)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
-                dialogs = Dialog(character=enemies[0], player=subject, dialog_dict={'person_1':'Тесак: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Тесак: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Тесак: окрыляй педофиляй'})
+                enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
+                                shootables_parent=shootables_parent, lst_enemies=enemies,x=60,z=100)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
+                enemies.append(Enemy(speed=1, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=enemies[0],
+                                shootables_parent=shootables_parent, lst_enemies=enemies,x=60,z=60))
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=enemies[1], dialog_dict={'person_1':'Тесак: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Тесак: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Тесак: окрыляй педофиляй'})
                 # Создаем диалог(внутри класса тоже дохуя аттрибутов)
             
 
@@ -144,6 +146,7 @@ def update():
             elif dialogs() == True:
                 game_state = 'gameplay' # Меняем режим на игру
                 destroy(enemies[0]) # Удаляем персонажа
+                destroy(enemies[1])
                 enemies = [] # Чистим список
                 gun.enable() # Показываем оружие
 
@@ -151,7 +154,7 @@ def update():
     if game_state == 'gameplay':
 
         if len(enemies) == 0 and score_manager.level < 5:
-            enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
+            enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                             shootables_parent=shootables_parent, lst_enemies=enemies, x=random.uniform(10, 100),
                             z=random.uniform(10, 100)) for _ in range(4)] # просто создаем 4 врагов пока уровень не будет 5
         elif score_manager.level == 5:
@@ -160,10 +163,10 @@ def update():
                 camera.enabled = False 
                 gun.disable() # Скрываем оружие
                 score_manager.alert_boss() # Вызываем надпись босс
-                boss = [Boss(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
+                boss = [Boss(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                             shootables_parent=shootables_parent, x=random.uniform(10, 100), z=random.uniform(10, 100)) for
                         _ in range(1)]  # Создаем босса, так же как Enemy
-                dialogs = Dialog(distance_max=100000, character=boss[0], player=subject, dialog_dict={'person_1':'Тесак: СУКА, красный гандон тоби пизда!','enemy_1':'Паша: Нет, я выебу тебя!','person_2':'Тесак: Тебе только парашу убирать!', 'enemy_2':'Паша: Мне пизда!'})
+                dialogs = Dialog(distance_max=100000, character=boss[0], character2=subject, dialog_dict={'person_1':'Тесак: СУКА, красный гандон тоби пизда!','enemy_1':'Паша: Нет, я выебу тебя!','person_2':'Тесак: Тебе только парашу убирать!', 'enemy_2':'Паша: Мне пизда!'})
                 # Создаем диалог который будет вызваться сразу из за distance_max=100000
 
             dialogs.update() # ОБновляем наш диалог
@@ -174,7 +177,7 @@ def update():
                 boss[0].speed = 1 # Даем боссу скорость, что бы он двигался
                 
         if score_manager.score > 1000:
-            Boss(speed=1, score_manager=score_manager, on_death_callback=remove_enemy, player=subject,
+            Boss(speed=1, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                 shootables_parent=shootables_parent, x=random.uniform(10, 100), z=random.uniform(10, 100))
 
 

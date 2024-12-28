@@ -1,16 +1,17 @@
 from ursina import *
 import random
-
+from player import create_player
 
 # Создаем врагов
 class Enemy(Entity):
     speed = 1.8
 
-    def __init__(self, shootables_parent, player, score_manager, on_death_callback=None,speed=None,**kwargs):
+    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None,**kwargs):
         super().__init__(parent=shootables_parent, texture=f"textures/{random.randint(1, 5)}.jpg", model='cube',
                          scale_y=5, scale_x=2.5, scale_z=2.5, origin_y=-.5,
                          color=color.light_gray, collider='box', **kwargs)
-        self.player = player
+        
+        self.target_of_the_persecution = create_player() if target_of_the_persecution == None else target_of_the_persecution
         self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5, .1, .1))
         self.max_hp = 100
         self.hp = self.max_hp
@@ -21,15 +22,15 @@ class Enemy(Entity):
             self.speed = speed
             
     def update(self):
-        dist = distance_xz(self.player.position, self.position)
+        dist = distance_xz(self.target_of_the_persecution.position, self.position)
         if dist > 90:  # 40
             return
 
         self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
 
-        self.look_at_2d(self.player.position, 'y')
+        self.look_at_2d(self.target_of_the_persecution.position, 'y')
         hit_info = raycast(self.world_position + Vec3(0, 1, 0), self.forward, 1000, ignore=(self,))
-        if hit_info.entity >= self.player:  # ==
+        if hit_info.entity >= self.target_of_the_persecution:  # ==
             if dist > 2:
                 self.position += self.forward * time.dt * self.speed
 

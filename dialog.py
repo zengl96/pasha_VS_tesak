@@ -1,33 +1,35 @@
 from ursina import *
 import math
-
-
-from ursina import *
-
+from player import create_player
 
 class Dialog(Entity):
 
     DialogTrigger  = False
     EndDialog = False
 
-    def __init__(self, character, player, dialog_dict, distance_max=5):
-        # super().__init__()
+    def __init__(self, character, character2, dialog_dict, distance_max=5):
+        
         self.character = character
-        self.player = player
+        self.player = create_player()
+
+        if character2 == self.player:
+            self.character2 = self.player
+        else:
+            self.character2 = character2
+
         self.dialog_dict = dialog_dict
         self.dialog_index = -1
-        self.player = player
         self.camera = camera
         self._ = True
         self.next_dialog = True
         self.distance_max = distance_max
 
 
+
     def show_dialog_window(self):
         self.player.speed = 0
-        self.player.camera_pivot.z = -5.5  
-        self.player.camera_pivot.y = 5.5 
-        self.player.camera_pivot.x = 5.5 
+        self.character.speed = 0
+        self.character2.speed = 0
         self.camera.enabled = False
         self.button = Button(scale=(1.5,.2), position=(0, -0.35), text='')
         self.velocity_y = 0
@@ -42,7 +44,7 @@ class Dialog(Entity):
         self.side_texture2 = Entity(
             parent=self.button,
             model='quad',
-            texture=self.player.texture,  
+            texture=self.character2.texture,  
             scale=(0.1, 0.8), 
             position=(0.4, 0)  
         )
@@ -74,9 +76,6 @@ class Dialog(Entity):
     def end_dialog(self):
 
         destroy(self.button)
-        self.player.camera_pivot.z = 0  
-        self.player.camera_pivot.y = 2 
-        self.player.camera_pivot.x = 0 
         self.camera.enabled = True
         self.player.speed = 8
         self.EndDialog = True
@@ -87,7 +86,7 @@ class Dialog(Entity):
 
         if self.EndDialog == False:
 
-            distance = ((self.player.x - self.character.x)**2 + (self.player.z - self.character.z)**2)**0.5
+            distance = ((self.character2.x - self.character.x)**2 + (self.character2.z - self.character.z)**2)**0.5
             if distance < self.distance_max:
 
                 if self.DialogTrigger == False:
