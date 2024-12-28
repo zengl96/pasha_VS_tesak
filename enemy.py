@@ -2,14 +2,16 @@ from ursina import *
 import random
 from player import create_player
 from scripts import activatemark
+from generate_map import generate_map
+import map_update
 # Создаем врагов
 class Enemy(Entity):
     speed = 1.8
 
-    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None, activate_mark=False, **kwargs):
+    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None, activate_mark=False,scale_y=5,texture=f"textures/{random.randint(1, 5)}.jpg", **kwargs):
 
-        super().__init__(parent=shootables_parent, texture=f"textures/{random.randint(1, 5)}.jpg", model='cube',
-                         scale_y=5, scale_x=2.5, scale_z=2.5, origin_y=-.5,
+        super().__init__(parent=shootables_parent, texture=texture, model='cube',
+                         scale_y=scale_y, scale_x=2.5, scale_z=2.5, origin_y=-.5,
                          color=color.light_gray, collider='box', **kwargs)
         
         self.target_of_the_persecution = create_player() if target_of_the_persecution == None else target_of_the_persecution
@@ -19,6 +21,10 @@ class Enemy(Entity):
         self.on_death_callback = on_death_callback
         self.score_manager = score_manager
 
+        self.pX = self.x 
+        self.pZ = self.z
+        self.terrain = generate_map()
+
         if speed != None:
             self.speed = speed
 
@@ -26,17 +32,22 @@ class Enemy(Entity):
             activatemark(self)
             
     def update(self):
-        dist = distance_xz(self.target_of_the_persecution.position, self.position)
-        if dist > 90:  # 40
-            return
+        if self.speed > 0:
+            map_update.update_for_enemy(self, self.terrain, 0, self.pX, self.pZ)
 
-        self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
+            dist = distance_xz(self.target_of_the_persecution.position, self.position)
+            if dist > 10*100:  # 40
+                return
 
-        self.look_at_2d(self.target_of_the_persecution.position, 'y')
-        hit_info = raycast(self.world_position + Vec3(0, 1, 0), self.forward, 1000, ignore=(self,))
-        if hit_info.entity >= self.target_of_the_persecution:  # ==
-            if dist > 2:
-                self.position += self.forward * time.dt * self.speed
+            self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
+
+            self.look_at_2d(self.target_of_the_persecution.position, 'y')
+            hit_info = raycast(self.world_position + Vec3(0, 1, 0), self.forward, 1000, ignore=(self,))
+            if hit_info.entity >= self.target_of_the_persecution:  # ==
+                if dist > 2:
+                    self.position += self.forward * time.dt * self.speed
+        else:
+            self.health_bar.alpha = 0
 
     def dead(self):
         target_rotation = self.rotation_z - 90
@@ -71,10 +82,10 @@ class Enemy(Entity):
 
 
 class Boss(Enemy):
-    def __init__(self, speed, shootables_parent, player, score_manager, on_death_callback=None, **kwargs):
+    def __init__(self, speed, shootables_parent, score_manager,target_of_the_persecution=None, on_death_callback=None, **kwargs):
         super().__init__(
             shootables_parent=shootables_parent,
-            player=player,
+            target_of_the_persecution=target_of_the_persecution,
             score_manager=score_manager,
             on_death_callback=on_death_callback,
             **kwargs

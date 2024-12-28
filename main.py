@@ -15,6 +15,7 @@ from dialog import Dialog
 from gamestate import game_state
 import map_update
 from Menu import Main_Menu
+from generate_map import generate_map
 
 if __name__ == '__main__': app = Ursina()
 
@@ -34,15 +35,16 @@ scene.fog_color = color.gray
 
 
 # загружаем аудио
-Audio('assets/thykier-the-limit.mp3', True)
+main_audio = Audio('assets/thykier-the-limit.mp3', True)
 grass_audio = Audio('assets/step.ogg', autoplay=False, loop=False)
 water_swim = Audio('assets/water-swim.mp3', autoplay=False, loop=False)
+sex_audio = Audio('assets/sex.mp3', autoplay=False, loop=False)
+
 arm_texture = load_texture('assets/arm_texture.png')
 skyboxTexture = Texture("textures/skybox.jpg")
 
 # Генерим карту
-map = Map(1371)
-terrain = MeshTerrain(map.landscale_mask)
+terrain = generate_map()
 
 skybox = Sky(model="sphere", double_sided=True, texture=skyboxTexture, rotation=(0, 90, 0))
 water = LitObject(position=(floor(terrain.subWidth / 2), -0.1, floor(terrain.subWidth / 2)), scale=terrain.subWidth,
@@ -115,7 +117,7 @@ def update():
     global count, pX, pZ
 
     # Обновление карты(тут нехуй менять)
-    map_update.update(subject,terrain, count,grass_audio, water_swim, pX, pZ)
+    map_update.update(subject,terrain, count, grass_audio, water_swim, pX, pZ)
 
 
     # Если у нас открыто меню, то игра дальше не продолжается
@@ -144,10 +146,31 @@ def update():
             elif dialogs() == True:
                 game_state = 'gameplay' # Меняем режим на игру
                 destroy(enemies[0]) # Удаляем персонажа
-                destroy(enemies[1])
                 enemies = [] # Чистим список
                 gun.enable() # Показываем оружие
 
+        if score_manager.score > 1000:
+            gun.disable()
+            if enemies == []:
+
+                camera.enabled = False
+
+                enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
+                                shootables_parent=shootables_parent,x=60,z=100,scale_y=3, texture='assets/cow.jpg')]
+                enemies.append(Enemy(speed=2, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=enemies[0],
+                                shootables_parent=shootables_parent,x=60,z=60))
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=enemies[1], dialog_dict={'enemy_1':'Корова: Выеби меня, паша!','person_1':'Паша: Нет, я проебал битву, ты меня еби!','enemy_2':'Корова: Иди сюда сучка',})
+            
+            dialogs.update() 
+
+            if dialogs() == False:
+                return 
+            elif dialogs() == True:
+                if sex_audio.playing == False:
+                    main_audio.stop()
+                    sex_audio.volume = 50
+                    sex_audio.pitch = random.random() + 0.7
+                    sex_audio.play()
 
     if game_state == 'gameplay':
 
@@ -175,8 +198,7 @@ def update():
                 boss[0].speed = 1 # Даем боссу скорость, что бы он двигался
                 
         if score_manager.score > 1000:
-            Boss(speed=1, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
-                shootables_parent=shootables_parent, x=random.uniform(10, 100), z=random.uniform(10, 100))
+            game_state = 'dialog'
 
 
 # Принятие входяящих клавиш с клавиатуры
