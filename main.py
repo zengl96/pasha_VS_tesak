@@ -133,10 +133,8 @@ def update():
                 camera.enabled = False
                 gun.disable()
                 enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
-                                shootables_parent=shootables_parent, lst_enemies=enemies,x=60,z=100)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
-                enemies.append(Enemy(speed=1, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=enemies[0],
-                                shootables_parent=shootables_parent, lst_enemies=enemies,x=60,z=60))
-                dialogs = Dialog(distance_max=5, character=enemies[0], character2=enemies[1], dialog_dict={'person_1':'Тесак: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Тесак: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Тесак: окрыляй педофиляй'})
+                                shootables_parent=shootables_parent,x=60,z=100, activate_mark=True)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=subject, dialog_dict={'person_1':'Тесак: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Тесак: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Тесак: окрыляй педофиляй'})
                 # Создаем диалог(внутри класса тоже дохуя аттрибутов)
             
 
@@ -155,7 +153,7 @@ def update():
 
         if len(enemies) == 0 and score_manager.level < 5:
             enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
-                            shootables_parent=shootables_parent, lst_enemies=enemies, x=random.uniform(10, 100),
+                            shootables_parent=shootables_parent, x=random.uniform(10, 100),
                             z=random.uniform(10, 100)) for _ in range(4)] # просто создаем 4 врагов пока уровень не будет 5
         elif score_manager.level == 5:
             if len(boss) == 0:

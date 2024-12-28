@@ -1,12 +1,13 @@
 from ursina import *
 import random
 from player import create_player
-
+from scripts import activatemark
 # Создаем врагов
 class Enemy(Entity):
     speed = 1.8
 
-    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None,**kwargs):
+    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None, activate_mark=False, **kwargs):
+
         super().__init__(parent=shootables_parent, texture=f"textures/{random.randint(1, 5)}.jpg", model='cube',
                          scale_y=5, scale_x=2.5, scale_z=2.5, origin_y=-.5,
                          color=color.light_gray, collider='box', **kwargs)
@@ -20,6 +21,9 @@ class Enemy(Entity):
 
         if speed != None:
             self.speed = speed
+
+        if activate_mark == True:
+            activatemark(self)
             
     def update(self):
         dist = distance_xz(self.target_of_the_persecution.position, self.position)
