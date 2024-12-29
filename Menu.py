@@ -13,7 +13,6 @@ class MenuButton(Button):
 
 class Main_Menu:
     def __init__(self):
-        
         self.player = create_player()
         self.skins = ['textures/t.jpeg', 'textures/6.jpg', 'textures/ars.png', 'textures/art.png']
         self.MenuBool = False
@@ -21,6 +20,7 @@ class Main_Menu:
         self.menu_parent = Entity(parent=camera.ui, y=.1, z=-1, ignore_paused=True)  # Установить z ближе к камере
         self.main_menu = Entity(parent=self.menu_parent, z=-1, ignore_paused=True)  # Тоже установить ближе
         self.options_menu = Entity(parent=self.menu_parent, z=-1, ignore_paused=True)
+
 
         self.state_handler = Animator({
             'main_menu' : self.main_menu,
@@ -35,11 +35,27 @@ class Main_Menu:
         ] 
 
 
-        button_spacing = .075 * 1.25
+        self.button_spacing = .075 * 1.25
         for i, e in enumerate(self.main_menu.buttons):
             e.parent = self.main_menu
-            e.y = (-i - 2) * button_spacing
+            e.y = (-i - 2) * self.button_spacing
             e.z = -1  # Кнопки тоже ближе к камере
+
+        self.create_options_menu()
+
+
+        # Создаем бэкграунд
+        background = Entity(
+            parent=self.menu_parent, 
+            model='cube', 
+            texture=f'textures/{randint(1, 5)}.jpg', 
+            scale=(camera.aspect_ratio, 1), 
+            world_y=0,
+            z=-1.1  # Задний фон чуть дальше кнопок
+        )
+
+
+    def create_options_menu(self):
 
         review_text = Text(parent=self.options_menu, y=.25, text='Настрйоки', origin=(-.5,0), z=-1)
         review_text.ignore_paused = True
@@ -55,18 +71,10 @@ class Main_Menu:
         text_scale_slider.on_value_changed = set_text_scale
 
 
-
-        volume_slider = Slider(0, 1, default=Audio.volume_multiplier, step=.1, text='Master Volume:',ignore_paused=True, parent=self.options_menu, x=-.25, z=-1)
-        volume_slider.ignore_paused = True
-        volume_slider.knob.ignore_paused = True
-        def set_volume_multiplier():
-            Audio.volume_multiplier = volume_slider.value
-        volume_slider.on_value_changed = set_volume_multiplier
-
         options_back = MenuButton(parent=self.options_menu, text='Back', x=-.25, origin_x=-.5, on_click=Func(setattr, self.state_handler, 'state', 'main_menu'))
         options_back.ignore_paused = True
-        for i, e in enumerate((text_scale_slider, volume_slider, options_back)):
-            e.y = -i * button_spacing
+        for i, e in enumerate((text_scale_slider, options_back)):
+            e.y = -i * self.button_spacing
 
         self.your_skin = Entity(parent=self.options_menu, texture=self.player.texture, model='cube',x=-.6, y=-0.1, ignore_paused = True, z=-1, scale=(0.3,0.3,0.3))
 
@@ -77,19 +85,8 @@ class Main_Menu:
         self.triangle_prev.on_click = self.switched_skins_perv 
 
 
-        # Создаем бэкграунд
-        background = Entity(
-            parent=self.menu_parent, 
-            model='cube', 
-            texture=f'textures/{randint(1, 5)}.jpg', 
-            scale=(camera.aspect_ratio, 1), 
-            world_y=0,
-            z=-1.1  # Задний фон чуть дальше кнопок
-        )
-
 
     def switched_skins_next(self):
-
         try:
             text_pl = self.player.texture
             count = -1
@@ -100,8 +97,8 @@ class Main_Menu:
             self.player.texture = self.your_skin.texture = self.skins[count+1]
         except: pass
 
-    def switched_skins_perv(self):
 
+    def switched_skins_perv(self):
         try:
             text_pl = self.player.texture
             count = -1
@@ -112,15 +109,15 @@ class Main_Menu:
             self.player.texture = self.your_skin.texture = self.skins[count-1]
         except: pass
 
-    def start_game(self):
 
+    def start_game(self):
         application.resume()
         self.menu_parent.disable()
         mouse.locked = True
         self.MenuBool = True
 
-    def enable_menu(self):
 
+    def enable_menu(self):
         application.pause()
         self.menu_parent.enable()
         mouse.locked = False
