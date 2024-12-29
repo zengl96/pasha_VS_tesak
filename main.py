@@ -59,7 +59,7 @@ score_manager = ScoreManager()
 
 # Создания первого оружия (тут тоже нехуй менять)
 gun = Gun(parent=camera, model='assets/uploads_files_2614590_Shotgun_Model.obj',
-          texture=r'textures\Shotgun_HDRP_BaseMap.png', rotationz=1, rotation_delay=0.05, delay_shoot=0.05)
+          texture='textures/Shotgun_HDRP_BaseMap.png', rotationz=1, rotation_delay=0.05, delay_shoot=0.05)
 gun.activate_flash()
 
 
@@ -93,22 +93,20 @@ def destroy_or_not(objects):
     except:
         return True
 
-
+application.resume()
 
 # Создаем меню
 menu = Main_Menu()
 
 
-
 def pause_input(key):
     global menu
-    if key == 'escape' and destroy_or_not(menu.menu_parent):
+    if key == 'escape':
         """Если esc нажат игра ставиться на паузу и генериться меню"""
-        application.pause()
-        menu = Main_Menu()
+        menu.enable_menu()
 
 
-# pause_handler = Entity(ignore_paused=True, input=pause_input)
+
 pause_handler = Entity(ignore_paused=True, input=pause_input)
 count = 0
 
@@ -124,6 +122,7 @@ def update():
     if menu() == False:
         return
 
+
     
     if game_state == 'dialog':
         
@@ -136,7 +135,7 @@ def update():
                 gun.disable()
                 enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                                 shootables_parent=shootables_parent,x=60,z=100, activate_mark=True)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
-                dialogs = Dialog(distance_max=5, character=enemies[0], character2=subject, dialog_dict={'person_1':'Тесак: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Тесак: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Тесак: окрыляй педофиляй'})
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=subject, dialog_dict={'person_1':'Главный герой: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Главный герой: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Главный герой: окрыляй педофиляй'})
                 # Создаем диалог(внутри класса тоже дохуя аттрибутов)
             
 
@@ -187,7 +186,7 @@ def update():
                 boss = [Boss(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                             shootables_parent=shootables_parent, x=random.uniform(10, 100), z=random.uniform(10, 100)) for
                         _ in range(1)]  # Создаем босса, так же как Enemy
-                dialogs = Dialog(distance_max=100000, character=boss[0], character2=subject, dialog_dict={'person_1':'Тесак: СУКА, красный гандон тоби пизда!','enemy_1':'Паша: Нет, я выебу тебя!','person_2':'Тесак: Тебе только парашу убирать!', 'enemy_2':'Паша: Мне пизда!'})
+                dialogs = Dialog(distance_max=100000, character=boss[0], character2=subject, dialog_dict={'person_1':'Главный герой: СУКА, красный гандон тоби пизда!','enemy_1':'Паша: Нет, я выебу тебя!','person_2':'Главный герой: Тебе только парашу убирать!', 'enemy_2':'Паша: Мне пизда!'})
                 # Создаем диалог который будет вызваться сразу из за distance_max=100000
 
             dialogs.update() # ОБновляем наш диалог
