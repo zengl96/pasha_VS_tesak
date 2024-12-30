@@ -52,8 +52,8 @@ class Dialog(Entity):
 
     def animate_text(self, text):
         for i in range(len(text)):
-            invoke(setattr, self.button, 'text', text[:i+1], delay=i * 0.02)
-        invoke(setattr, self, 'next_dialog', True, delay=len(text) * 0.021)
+            invoke(setattr, self.button, 'text', text[:i+1], delay=i * 0.03)
+        invoke(setattr, self, 'next_dialog', True, delay=len(text) * 0.031)
 
 
 
