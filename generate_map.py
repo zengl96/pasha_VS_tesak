@@ -7,7 +7,7 @@ def generate_map():
     global terrain
 
     if terrain == '':
-        map = Map(1371)
+        map = Map(9999)
         terrain = MeshTerrain(map.landscale_mask)
 
     return terrain

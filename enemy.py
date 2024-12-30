@@ -8,8 +8,10 @@ import map_update
 class Enemy(Entity):
     speed = 1.8
 
-    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None, activate_mark=False,scale_y=5,texture=f"textures/{random.randint(1, 5)}.jpg", **kwargs):
-
+    def __init__(self, shootables_parent, score_manager,target_of_the_persecution=None,on_death_callback=None,speed=None, activate_mark=False,scale_y=5,texture=None, points=25, **kwargs):
+        if texture == None:
+            texture = f"textures/{random.randint(1, 5)}.jpg"
+            
         super().__init__(parent=shootables_parent, texture=texture, model='cube',
                          scale_y=scale_y, scale_x=2.5, scale_z=2.5, origin_y=-.5,
                          color=color.light_gray, collider='box', **kwargs)
@@ -20,6 +22,7 @@ class Enemy(Entity):
         self.hp = self.max_hp
         self.on_death_callback = on_death_callback
         self.score_manager = score_manager
+        self.points = points
 
         self.pX = self.x 
         self.pZ = self.z
@@ -63,7 +66,7 @@ class Enemy(Entity):
         invoke(lambda: destroy(self), delay=duration + 0.1)
 
     def add_points(self):
-        self.score_manager.update_score(25)
+        self.score_manager.update_score(self.points)
 
     @property
     def hp(self):

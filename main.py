@@ -13,9 +13,14 @@ from player import create_player
 import random
 from dialog import Dialog
 from gamestate import game_state
-import map_update
+from map_update import MapUpdate
 from Menu import Main_Menu
 from generate_map import generate_map
+from scripts import black_screen
+import json
+
+dialogs_json = json.load(open('dialogs.json', 'r', encoding='utf-8'))
+
 
 if __name__ == '__main__': app = Ursina()
 
@@ -23,11 +28,8 @@ lit = LitInit()  # Загружаем свет
 
 subject = create_player() # Создаем игрока (там нехуй менять)
 
-
-# координаты
 pX = subject.x 
 pZ = subject.z
-
 
 # сцена
 scene.fog_density = (0, 95)
@@ -59,7 +61,7 @@ score_manager = ScoreManager()
 
 # Создания первого оружия (тут тоже нехуй менять)
 gun = Gun(parent=camera, model='assets/uploads_files_2614590_Shotgun_Model.obj',
-          texture='textures/Shotgun_HDRP_BaseMap.png', rotationz=1, rotation_delay=0.05, delay_shoot=0.05)
+          texture='textures/Shotgun_HDRP_BaseMap.png')
 gun.activate_flash()
 
 
@@ -93,11 +95,9 @@ def destroy_or_not(objects):
     except:
         return True
 
-application.resume()
-
 # Создаем меню
 menu = Main_Menu()
-
+Map_Update  = MapUpdate(subject, terrain, 0, grass_audio, water_swim, pX, pZ)
 
 def pause_input(key):
     global menu
@@ -114,8 +114,9 @@ def update():
     global enemies, boss, dialogs, game_state, men_count, menu
     global count, pX, pZ
 
+    
     # Обновление карты(тут нехуй менять)
-    map_update.update(subject,terrain, count, grass_audio, water_swim, pX, pZ)
+    Map_Update.update_map()
 
 
     # Если у нас открыто меню, то игра дальше не продолжается
@@ -123,10 +124,12 @@ def update():
         return
 
 
-    
+    # black_screen = Entity(parent=camera, model='quad', scale=1000, color=color.black, alpha=1)
     if game_state == 'dialog':
         
         if score_manager.score == 0:
+
+
             # Проверку выше надо будет поменять
             gun.disable() # Скрываем оружие
             if enemies == []:
@@ -135,18 +138,20 @@ def update():
                 gun.disable()
                 enemies = [Enemy(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                                 shootables_parent=shootables_parent,x=60,z=100, activate_mark=True)] # Создание врага, можешь создавать любого(можно дохуя че поменять там внутри класса)
-                dialogs = Dialog(distance_max=5, character=enemies[0], character2=subject, dialog_dict={'person_1':'Главный герой: Паша, ты пидорас!','enemy_1':'Паша: Нет, я гандон!','person_2':'Главный герой: отсоси мой член сучка', 'enemy_2':'Паша: Я хочу', 'person_3':'Главный герой: окрыляй педофиляй'})
-                # Создаем диалог(внутри класса тоже дохуя аттрибутов)
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=subject, dialog_dict=dialogs_json['dialog1']) # Создаем диалог(внутри класса тоже дохуя аттрибутов)
             
 
             dialogs.update() # обновляем диалог
             if dialogs() == False:
                 return  # Если диалог еще идет то дальше игра не идет
             elif dialogs() == True:
+                black_screen('Глава 1. Шоу пощёчин для сучек', 1)
                 game_state = 'gameplay' # Меняем режим на игру
                 destroy(enemies[0]) # Удаляем персонажа
                 enemies = [] # Чистим список
                 gun.enable() # Показываем оружие
+
+
 
         if score_manager.score > 1000:
             gun.disable()
@@ -158,50 +163,70 @@ def update():
                                 shootables_parent=shootables_parent,x=60,z=100,scale_y=3, texture='assets/cow.jpg')]
                 enemies.append(Enemy(speed=2, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=enemies[0],
                                 shootables_parent=shootables_parent,x=60,z=60))
-                dialogs = Dialog(distance_max=5, character=enemies[0], character2=enemies[1], dialog_dict={'enemy_1':'Корова: Выеби меня, паша!','person_1':'Паша: Нет, я проебал битву, ты меня еби!','enemy_2':'Корова: Иди сюда сучка',})
-            
+                dialogs = Dialog(distance_max=5, character=enemies[0], character2=enemies[1], dialog_dict=dialogs_json['dialog3'])
+
             dialogs.update() 
 
             if dialogs() == False:
                 return 
             elif dialogs() == True:
+                black_screen('', 100)
                 if sex_audio.playing == False:
                     main_audio.stop()
                     sex_audio.volume = 50
                     sex_audio.pitch = random.random() + 0.7
                     sex_audio.play()
 
+
+
     if game_state == 'gameplay':
 
-        if len(enemies) == 0 and score_manager.level < 5:
-            enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
-                            shootables_parent=shootables_parent, x=random.uniform(10, 100),
-                            z=random.uniform(10, 100)) for _ in range(4)] # просто создаем 4 врагов пока уровень не будет 5
+
+
+
+        if score_manager.level < 5:
+
+            if len(enemies) == 0:
+                enemies = [Enemy(score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
+                                shootables_parent=shootables_parent, x=random.uniform(10, 100),points = 100/4,
+                                z=random.uniform(10, 100)) for _ in range(4)]
+
+
+
+
+
         elif score_manager.level == 5:
+            
             if len(boss) == 0:
-                # если босса нет на карте
+
+                black_screen('Глава 2. Босс Паша на свободе — приготовьтесь к грёбаной войне!', 1)
                 camera.enabled = False 
-                gun.disable() # Скрываем оружие
-                score_manager.alert_boss() # Вызываем надпись босс
+                gun.disable()
                 boss = [Boss(speed=0, score_manager=score_manager, on_death_callback=remove_enemy, target_of_the_persecution=subject,
                             shootables_parent=shootables_parent, x=random.uniform(10, 100), z=random.uniform(10, 100)) for
                         _ in range(1)]  # Создаем босса, так же как Enemy
-                dialogs = Dialog(distance_max=100000, character=boss[0], character2=subject, dialog_dict={'person_1':'Главный герой: СУКА, красный гандон тоби пизда!','enemy_1':'Паша: Нет, я выебу тебя!','person_2':'Главный герой: Тебе только парашу убирать!', 'enemy_2':'Паша: Мне пизда!'})
-                # Создаем диалог который будет вызваться сразу из за distance_max=100000
+                dist = distance(subject, boss[0])-1
+                dialogs = Dialog(distance_max=dist, character=boss[0], character2=subject, dialog_dict=dialogs_json['dialog2'])
+
 
             dialogs.update() # ОБновляем наш диалог
             if dialogs() == False:
                 return # Если диалог еще идет то дальше игра не идет
             elif dialogs() == True: # Если диалог закончился
-                gun.enable()  # Возращаем оружие
+                gun.enable()
                 boss[0].speed = 1 # Даем боссу скорость, что бы он двигался
                 
+
+
+
         if score_manager.score > 1000:
+
+            black_screen('Глава 3. Корова-абунга! «Пашу ждёт расправа!»', 1)
             game_state = 'dialog'
 
 
-# Принятие входяящих клавиш с клавиатуры
-# pause_handler = Entity(ignore_paused=True, input=pause_input)
+
+
 terrain.genTerrain()
 
 

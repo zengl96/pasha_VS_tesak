@@ -12,7 +12,8 @@ class ScoreManager:
     def update_score(self, points):
         # обновляем очки, т.е. добавляем к общим очкам points
         self.score += points
-        self.score_text.text = f'Score: {self.score}'
+        around_score = str(self.score).split('.')[0]
+        self.score_text.text = f'Score: {around_score}'
         self.check_level_up() # Вызываем проверку уровня
 
     def check_level_up(self):
@@ -34,4 +35,4 @@ class ScoreManager:
         
     def increase_enemy_speed(self):
         # При переходе за 100 очков повышаем скорость врагам, из метода level_up
-        Enemy.speed *= 1.5
+        Enemy.speed *= 1.1
